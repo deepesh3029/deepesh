@@ -2,9 +2,124 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Hello World</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepesh Kumar Gupta | Lead Developer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #0f172a; color: #e2e8f0; }
+        .gradient-text {
+            background: linear-gradient(90deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .card { background: #1e293b; border: 1px solid #334155; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-5px); border-color: #60a5fa; }
+        .skill-badge { background: #334155; border-radius: 20px; padding: 4px 12px; font-size: 0.85rem; }
+    </style>
 </head>
-<body>
-    <h1>Hello World</h1>
+<body class="font-sans antialiased">
+
+    <div class="max-w-5xl mx-auto px-6 py-12">
+        <header class="flex flex-col md:flex-row items-center gap-8 mb-16">
+            <div class="w-48 h-48 rounded-2xl overflow-hidden border-4 border-blue-500 shadow-xl">
+                <img src="https://i.imgur.com/your-image-link.png" alt="Deepesh Kumar Gupta" class="w-full h-full object-cover">
+            </div>
+            <div class="flex-1 text-center md:text-left">
+                <h1 class="text-5xl font-extrabold mb-2">Deepesh Kumar Gupta [cite: 1]</h1>
+                <p class="text-2xl gradient-text font-bold mb-4">Lead Developer II & Full Stack Engineer </p>
+                <div class="flex flex-wrap justify-center md:justify-start gap-4 text-sm text-slate-400">
+                    <span><i class="fas fa-map-marker-alt mr-2 text-blue-400"></i>HRBR Layout, Bengaluru </span>
+                    <span><i class="fas fa-envelope mr-2 text-blue-400"></i>deepesh.gupta@delta.com </span>
+                    <span><i class="fas fa-phone mr-2 text-blue-400"></i>8981300536 </span>
+                </div>
+            </div>
+        </header>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 border-l-4 border-blue-500 pl-4 uppercase tracking-wider">Professional Summary [cite: 3]</h2>
+            <div class="card p-6 rounded-xl leading-relaxed text-slate-300">
+                <p class="mb-4">11+ years of expertise in Java, Spring Boot, and AWS Cloud, specializing in enterprise-grade microservices and modernizing large-scale systems[cite: 4, 5]. Focused on engineering productivity through AI tools and MCP Servers to drive speed-to-market[cite: 8].</p>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 border-l-4 border-purple-500 pl-4 uppercase tracking-wider">Technical Arsenal [cite: 9]</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card p-6 rounded-xl">
+                    <h3 class="font-bold mb-4 text-blue-400"><i class="fas fa-code mr-2"></i>Development</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="skill-badge">Java 11/17 [cite: 10]</span>
+                        <span class="skill-badge">Spring Boot [cite: 14]</span>
+                        <span class="skill-badge">TypeScript [cite: 10]</span>
+                        <span class="skill-badge">React [cite: 14]</span>
+                        <span class="skill-badge">Node.js [cite: 10]</span>
+                    </div>
+                </div>
+                <div class="card p-6 rounded-xl">
+                    <h3 class="font-bold mb-4 text-purple-400"><i class="fas fa-cloud mr-2"></i>Cloud & DevOps</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="skill-badge">AWS (EKS, Lambda, S3) [cite: 11]</span>
+                        <span class="skill-badge">Docker & K8s [cite: 13]</span>
+                        <span class="skill-badge">Jenkins [cite: 13]</span>
+                        <span class="skill-badge">Terraform [cite: 11]</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 border-l-4 border-green-500 pl-4 uppercase tracking-wider">Career Journey [cite: 19]</h2>
+            
+            <div class="relative border-l-2 border-slate-700 ml-4 pl-8 pb-8">
+                <div class="absolute w-4 h-4 bg-blue-500 rounded-full -left-[9px] top-1"></div>
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-bold">Senior Lead Full Stack Developer | Delta Airlines [cite: 20]</h3>
+                    <span class="text-blue-400 font-mono text-sm">05/2022 – Present [cite: 21]</span>
+                </div>
+                <ul class="text-slate-400 text-sm list-disc list-inside space-y-1">
+                    <li>Leading modernization of core airline applications using event-driven microservices[cite: 22, 23].</li>
+                    <li>Designed scalable architecture and secure API patterns[cite: 23].</li>
+                    <li>Enhanced observability with Dynatrace and PagerDuty[cite: 24].</li>
+                </ul>
+            </div>
+
+            <div class="relative border-l-2 border-slate-700 ml-4 pl-8 pb-8">
+                <div class="absolute w-4 h-4 bg-slate-600 rounded-full -left-[9px] top-1"></div>
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-bold">Senior Full Stack Developer | 365 Retail Markets [cite: 28]</h3>
+                    <span class="text-slate-500 font-mono text-sm">06/2020 – 05/2022 [cite: 29]</span>
+                </div>
+                <p class="text-slate-400 text-sm">Built vending automation microservices and automated CI/CD with Jenkins and Gradle[cite: 30, 33].</p>
+            </div>
+
+            <div class="relative border-l-2 border-slate-700 ml-4 pl-8">
+                <div class="absolute w-4 h-4 bg-slate-600 rounded-full -left-[9px] top-1"></div>
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-xl font-bold">Senior Full Stack Developer | MHP – Porsche AG [cite: 34]</h3>
+                    <span class="text-slate-500 font-mono text-sm">Frankfurt, Germany [cite: 35]</span>
+                </div>
+                <p class="text-slate-400 text-sm">Designed EV charging service backend and fleet management Angular applications[cite: 36, 38].</p>
+            </div>
+        </section>
+
+        <footer class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12 pt-12 border-t border-slate-800">
+            <div>
+                <h3 class="text-lg font-bold mb-4">Certifications & Awards [cite: 61]</h3>
+                <ul class="text-sm text-slate-400 space-y-2">
+                    <li><i class="fas fa-trophy text-yellow-500 mr-2"></i>Delta Unstoppable Awards (5 Gold, 1 Platinum) [cite: 62]</li>
+                    <li><i class="fas fa-certificate text-blue-500 mr-2"></i>Oracle Certified Java Programmer (SE6) [cite: 63]</li>
+                </ul>
+            </div>
+            <div class="text-right">
+                <p class="text-slate-500 text-sm">B.Tech in Electronics & Communication [cite: 60]</p>
+                <div class="mt-4 flex justify-end gap-4 text-xl">
+                    <i class="fab fa-linkedin hover:text-blue-400 cursor-pointer"></i>
+                    <i class="fab fa-github hover:text-white cursor-pointer"></i>
+                </div>
+            </div>
+        </footer>
+    </div>
+
 </body>
 </html>
