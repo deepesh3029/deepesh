@@ -48,6 +48,42 @@ button{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;background:
 #pinError{color:#f87171;font-size:13px;margin-top:10px;min-height:16px}
 #pinSubmit{margin-top:16px;background:#22c55e;color:#052e16;font-weight:bold;padding:8px 20px}
 #rememberRow{margin-top:14px;font-size:13px;color:#94a3b8;display:flex;align-items:center;gap:6px}
+
+/* ---------- mobile top bar (hidden on desktop) ---------- */
+#mobileTopBar{display:none}
+
+/* ---------- responsive ---------- */
+@media (max-width: 768px){
+  body{overflow:auto}
+  #mobileTopBar{
+    display:flex;align-items:center;gap:12px;
+    padding:12px 16px;background:#1e293b;border-bottom:1px solid #334155;
+    position:sticky;top:0;z-index:20;
+  }
+  #mobileTopBar h2{margin:0;font-size:16px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #hamburgerBtn{background:none;border:none;color:#fff;font-size:22px;padding:6px 10px;margin:0;cursor:pointer}
+  .app{position:relative;height:calc(100vh - 48px);overflow:hidden}
+  .sidebar{
+    position:fixed;top:48px;left:0;bottom:0;width:82vw;max-width:320px;
+    transform:translateX(-100%);transition:transform .25s ease;z-index:30;
+  }
+  .sidebar.open{transform:translateX(0)}
+  #sidebarBackdrop{
+    display:none;position:fixed;inset:48px 0 0 0;background:rgba(0,0,0,.5);z-index:25;
+  }
+  #sidebarBackdrop.open{display:block}
+  .editor{padding:16px;width:100%}
+  .title-input{font-size:20px}
+  .content-input{min-height:180px;font-size:16px}
+  .tags-input,#searchBox,#pinInput{font-size:16px}
+  button{min-height:40px}
+  .attachment-row{flex-direction:column;align-items:flex-start;gap:6px}
+  .attachment-row button{align-self:flex-end}
+  .editor-footer{flex-direction:column;align-items:stretch;gap:10px}
+  .editor-footer .save-status{text-align:center}
+  #lockScreen h2{font-size:20px}
+  #pinInput{width:70vw;max-width:220px}
+}
 </style></head>
 <body>
 <div id="lockScreen">
@@ -58,8 +94,14 @@ button{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;background:
   <button id="pinSubmit">Unlock</button>
   <div id="rememberRow"><input type="checkbox" id="rememberMe" checked><label for="rememberMe">Remember me on this device</label></div>
 </div>
-<div class="app" id="appRoot" style="display:none">
-  <aside class="sidebar">
+<div id="appRoot" style="display:none">
+  <div id="mobileTopBar">
+    <button id="hamburgerBtn">☰</button>
+    <h2>🧠 Second Brain</h2>
+  </div>
+  <div class="app">
+  <div id="sidebarBackdrop"></div>
+  <aside class="sidebar" id="sidebarEl">
     <div class="sidebar-header">
       <h2>🧠 Second Brain</h2>
       <div id="accountLabel" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></div>
@@ -137,7 +179,7 @@ function enterAccount(account, remember){
     localStorage.setItem(REMEMBER_KEY, JSON.stringify({id:account.id, pinHash:account.pinHash}));
   }
   document.getElementById('lockScreen').style.display = 'none';
-  document.getElementById('appRoot').style.display = 'flex';
+  document.getElementById('appRoot').style.display = 'block';
   document.getElementById('accountLabel').textContent = currentAccountName;
   initApp();
 }
@@ -232,12 +274,18 @@ function escapeHtml(s){
   return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function closeSidebarDrawer(){
+  document.getElementById('sidebarEl').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('open');
+}
+
 /* ---------- selecting / editing ---------- */
 async function selectNote(id){
   currentNoteId = id;
   renderNotesList();
   const note = notesCache.find(n=>n.id===id);
   if(!note) return;
+  closeSidebarDrawer();
   document.getElementById('emptyState').style.display='none';
   document.getElementById('editorView').style.display='flex';
   document.getElementById('titleInput').value = note.title || '';
@@ -249,6 +297,7 @@ async function selectNote(id){
 
 async function createNewNote(){
   console.log('[createNewNote] account:', currentAccountId);
+  closeSidebarDrawer();
   const {data, error} = await sb.from('notes').insert({title:'Untitled',content:'',tags:[],account_id:currentAccountId}).select().single();
   if(error){console.error('[createNewNote] ERROR:', error);return;}
   console.log('[createNewNote] created:', data);
@@ -355,6 +404,13 @@ function initApp(){
 
   /* events */
   document.getElementById('newNoteBtn').addEventListener('click', createNewNote);
+
+  /* mobile sidebar drawer */
+  document.getElementById('hamburgerBtn').addEventListener('click', ()=>{
+    document.getElementById('sidebarEl').classList.toggle('open');
+    document.getElementById('sidebarBackdrop').classList.toggle('open');
+  });
+  document.getElementById('sidebarBackdrop').addEventListener('click', closeSidebarDrawer);
   document.getElementById('titleInput').addEventListener('input', scheduleSave);
   document.getElementById('tagsInput').addEventListener('input', scheduleSave);
   document.getElementById('contentInput').addEventListener('input', scheduleSave);
