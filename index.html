@@ -62,6 +62,7 @@ button{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;background:
   }
   #mobileTopBar h2{margin:0;font-size:16px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #hamburgerBtn{background:none;border:none;color:#fff;font-size:22px;padding:6px 10px;margin:0;cursor:pointer}
+  #logoutBtnMobile{background:#334155;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px;margin:0;white-space:nowrap}
   .app{position:relative;height:calc(100vh - 60px);overflow:hidden}
   .sidebar{
     position:fixed;top:60px;left:0;bottom:0;width:82vw;max-width:320px;
@@ -98,6 +99,7 @@ button{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;background:
   <div id="mobileTopBar">
     <button id="hamburgerBtn">☰</button>
     <h2>🧠 Second Brain</h2>
+    <button id="logoutBtnMobile" title="Logout">🔓 Logout</button>
   </div>
   <div class="app">
   <div id="sidebarBackdrop"></div>
@@ -107,7 +109,7 @@ button{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;background:
       <div id="accountLabel" style="font-size:12px;color:#94a3b8;margin-bottom:10px"></div>
       <input id="searchBox" placeholder="Search notes...">
       <button id="newNoteBtn">+ New Note</button>
-      <button id="switchAccountBtn" style="width:100%;margin-top:6px;background:#334155">Switch Account</button>
+      <button id="switchAccountBtn" style="width:100%;margin-top:6px;background:#334155">🔓 Logout</button>
     </div>
     <div id="notesList" class="notes-list"></div>
   </aside>
@@ -207,21 +209,29 @@ function switchAccount(){
 document.getElementById('pinSubmit').addEventListener('click', tryUnlock);
 document.getElementById('pinInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryUnlock(); });
 document.getElementById('switchAccountBtn').addEventListener('click', switchAccount);
+document.getElementById('logoutBtnMobile').addEventListener('click', switchAccount);
 
-(function checkRemembered(){
+const SUPABASE_URL = 'https://bxehlwnuxotyvtzjhjka.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_keen_9L13vujJMqX8n3RSw_HCWUXDl-';
+console.log('[init] second-brain build: 2026-07-16-remember-me-fix');
+console.log('[init] Supabase URL in use:', SUPABASE_URL);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* IMPORTANT: this is only DEFINED here -- it's INVOKED at the very end of
+   the script, after every variable it touches (notesCache, currentNoteId,
+   appInitialized, etc.) has been declared. Calling it any earlier throws
+   silently inside the try/catch and leaves the app half-initialized. */
+function checkRemembered(){
   try{
     const saved = JSON.parse(localStorage.getItem(REMEMBER_KEY) || 'null');
     if(saved){
       const account = ACCOUNTS.find(a => a.id === saved.id && a.pinHash === saved.pinHash);
       if(account) enterAccount(account, false);
     }
-  }catch(e){}
-})();
-
-const SUPABASE_URL = 'https://bxehlwnuxotyvtzjhjka.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_keen_9L13vujJMqX8n3RSw_HCWUXDl-';
-console.log('[init] Supabase URL in use:', SUPABASE_URL);
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }catch(e){
+    console.error('[checkRemembered] ERROR:', e);
+  }
+}
 
 let notesCache = [];
 let currentNoteId = null;
@@ -275,9 +285,31 @@ function escapeHtml(s){
 }
 
 function closeSidebarDrawer(){
-  document.getElementById('sidebarEl').classList.remove('open');
-  document.getElementById('sidebarBackdrop').classList.remove('open');
+  setSidebarOpen(false);
 }
+
+let sidebarOpen = false;
+function setSidebarOpen(open){
+  console.log('[sidebar] setSidebarOpen:', open, '(was', sidebarOpen, ')');
+  sidebarOpen = open;
+  document.getElementById('sidebarEl').classList.toggle('open', open);
+  document.getElementById('sidebarBackdrop').classList.toggle('open', open);
+}
+
+/* Reset drawer state whenever the layout crosses the mobile/desktop
+   breakpoint (e.g. rotating a phone, or resizing a browser window) --
+   otherwise a leftover "open" class from one mode can make the next
+   hamburger tap in the other mode seem to do nothing, or do the opposite
+   of what's expected. */
+let wasMobileWidth = window.innerWidth <= 768;
+window.addEventListener('resize', ()=>{
+  const isMobileWidth = window.innerWidth <= 768;
+  if(isMobileWidth !== wasMobileWidth){
+    console.log('[sidebar] crossed breakpoint, isMobileWidth:', isMobileWidth, 'innerWidth:', window.innerWidth);
+    wasMobileWidth = isMobileWidth;
+    setSidebarOpen(false);
+  }
+});
 
 /* ---------- selecting / editing ---------- */
 async function selectNote(id){
@@ -407,8 +439,8 @@ function initApp(){
 
   /* mobile sidebar drawer */
   document.getElementById('hamburgerBtn').addEventListener('click', ()=>{
-    document.getElementById('sidebarEl').classList.toggle('open');
-    document.getElementById('sidebarBackdrop').classList.toggle('open');
+    console.log('[sidebar] hamburger clicked, innerWidth:', window.innerWidth);
+    setSidebarOpen(!sidebarOpen);
   });
   document.getElementById('sidebarBackdrop').addEventListener('click', closeSidebarDrawer);
   document.getElementById('titleInput').addEventListener('input', scheduleSave);
@@ -427,5 +459,8 @@ function initApp(){
 
   loadNotes();
 }
+
+/* Now safe to call -- every variable/function above has been declared. */
+checkRemembered();
 </script>
 </body></html>
