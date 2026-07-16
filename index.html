@@ -127,6 +127,7 @@ button{padding:8px 14px;border-radius:6px;border:none;cursor:pointer;background:
       </div>
       <div class="editor-footer">
         <span id="saveStatus" class="save-status"></span>
+        <button id="syncBtn" title="Pull the latest saved version of this note">🔄 Sync</button>
         <button id="deleteBtn" class="danger">Delete Note</button>
       </div>
     </div>
@@ -311,6 +312,56 @@ window.addEventListener('resize', ()=>{
   }
 });
 
+/* Live-refresh the currently open note's editor when it changes on another
+   device/tab -- but only if none of its inputs are focused right now, so we
+   never yank the cursor or overwrite a keystroke that's mid-flight. */
+function maybeRefreshOpenNote(payload){
+  const row = payload.new || payload.old;
+  if(!row || row.id !== currentNoteId) return;
+
+  if(payload.eventType === 'DELETE'){
+    console.log('[notes-sync] open note was deleted elsewhere, closing editor');
+    currentNoteId = null;
+    document.getElementById('editorView').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'block';
+    return;
+  }
+
+  const titleEl = document.getElementById('titleInput');
+  const tagsEl = document.getElementById('tagsInput');
+  const contentEl = document.getElementById('contentInput');
+  const focused = document.activeElement;
+  if(focused === titleEl || focused === tagsEl || focused === contentEl){
+    console.log('[notes-sync] skipping live refresh -- you are actively editing this note');
+    return;
+  }
+
+  console.log('[notes-sync] live-refreshing open note from remote update');
+  titleEl.value = row.title || '';
+  tagsEl.value = (row.tags || []).join(', ');
+  contentEl.value = row.content || '';
+}
+
+async function manualSync(){
+  if(!currentNoteId){console.warn('[manualSync] no note open');return;}
+  console.log('[manualSync] pulling latest for note:', currentNoteId);
+  const {data, error} = await sb.from('notes').select('*').eq('id', currentNoteId).eq('account_id', currentAccountId).single();
+  if(error){console.error('[manualSync] ERROR:', error);document.getElementById('saveStatus').textContent='Sync failed';return;}
+
+  const currentContent = document.getElementById('contentInput').value;
+  const currentTitle = document.getElementById('titleInput').value;
+  const hasLocalChanges = (data.title||'') !== currentTitle || (data.content||'') !== currentContent;
+  if(hasLocalChanges){
+    if(!confirm('This will replace what you see with the latest saved version. Any unsaved typing here will be lost. Continue?')) return;
+  }
+
+  document.getElementById('titleInput').value = data.title || '';
+  document.getElementById('tagsInput').value = (data.tags || []).join(', ');
+  document.getElementById('contentInput').value = data.content || '';
+  document.getElementById('saveStatus').textContent = 'Synced';
+  console.log('[manualSync] done');
+}
+
 /* ---------- selecting / editing ---------- */
 async function selectNote(id){
   currentNoteId = id;
@@ -341,7 +392,7 @@ function scheduleSave(){
   console.log('[scheduleSave] triggered, currentNoteId:', currentNoteId);
   document.getElementById('saveStatus').textContent = 'Saving...';
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveCurrentNote, 600);
+  saveTimer = setTimeout(saveCurrentNote, 250);
 }
 
 async function saveCurrentNote(){
@@ -424,7 +475,10 @@ function initApp(){
 
   /* realtime */
   sb.channel('notes-sync')
-    .on('postgres_changes', {event:'*', schema:'public', table:'notes'}, ()=>{ loadNotes(); })
+    .on('postgres_changes', {event:'*', schema:'public', table:'notes'}, (payload)=>{
+      loadNotes();
+      maybeRefreshOpenNote(payload);
+    })
     .subscribe();
 
   sb.channel('attachments-sync')
@@ -447,6 +501,7 @@ function initApp(){
   document.getElementById('tagsInput').addEventListener('input', scheduleSave);
   document.getElementById('contentInput').addEventListener('input', scheduleSave);
   document.getElementById('deleteBtn').addEventListener('click', deleteCurrentNote);
+  document.getElementById('syncBtn').addEventListener('click', manualSync);
   document.getElementById('attachBtn').addEventListener('click', ()=>document.getElementById('fileInput').click());
   document.getElementById('fileInput').addEventListener('change', (e)=>{
     if(e.target.files[0]) uploadAttachment(e.target.files[0]);
